@@ -546,8 +546,14 @@
   .promo-time b{ display:block; font-size:1.5rem; font-weight:800; color:#fff; letter-spacing:0.02em; }
   .promo-time span{ font-size:0.72rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:rgba(245,245,245,0.8); }
   @media (max-width:760px){
-    .promo-card{ grid-template-columns:1fr; text-align:center; gap:18px; padding:30px 22px; }
+    .promo-card{ grid-template-columns:1fr; text-align:center; gap:18px; padding:30px 22px 62px; }
     .promo-time{ justify-self:center; }
+    /* watermark: centred and sized to the card width so it is not cut off */
+    .promo-card::before{
+      left:50%; right:auto; bottom:-0.22em;
+      transform:translateX(-50%);
+      font-size:12.5vw;
+    }
   }
 
   .promo-inline{
