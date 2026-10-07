@@ -455,11 +455,42 @@
   .addr-block{color:var(--ink-dim); line-height:1.8;}
   .addr-block strong{color:var(--ink); display:block; font-size:1.05rem; font-weight:800; margin-bottom:8px;}
   .map-box{
-    margin-top:22px; aspect-ratio:16/9; background:var(--bg-card); border:1px solid var(--line);
-    display:flex; align-items:center; justify-content:center; color:var(--ink-dim); font-size:0.82rem;
-    overflow:hidden; transition:border-color .2s ease, color .2s ease;
+    position:relative; margin-top:22px; aspect-ratio:16/9;
+    border:1px solid var(--line); overflow:hidden;
+    background:
+      repeating-linear-gradient(90deg, rgba(245,245,245,0.05) 0 1px, transparent 1px 46px),
+      repeating-linear-gradient(0deg,  rgba(245,245,245,0.05) 0 1px, transparent 1px 46px),
+      radial-gradient(circle at 50% 45%, rgba(131,12,12,0.28), transparent 62%),
+      var(--bg-card);
   }
-  .map-box:hover{ border-color:var(--accent); color:var(--ink); }
+  .map-box iframe{ width:100%; height:100%; border:0; display:block; }
+  .map-ask{
+    position:absolute; inset:0; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;
+    background:none; border:0; padding:20px; text-align:center;
+    font-family:'Manrope',sans-serif; color:var(--ink-dim);
+    transition:background .2s ease;
+  }
+  .map-ask:hover{ background:rgba(245,245,245,0.04); }
+  .map-ask .pin{
+    width:34px; height:34px; border-radius:50% 50% 50% 0;
+    transform:rotate(-45deg); background:var(--accent-bright);
+    box-shadow:0 8px 18px rgba(0,0,0,0.5);
+  }
+  .map-ask .pin::after{
+    content:""; display:block; width:12px; height:12px; border-radius:50%;
+    background:var(--bg); margin:11px 0 0 11px;
+  }
+  .map-ask .cta{
+    border:2px solid var(--accent); background:var(--accent); color:#fff;
+    padding:9px 20px; font-size:0.8rem; font-weight:800;
+    text-transform:uppercase; letter-spacing:0.05em;
+  }
+  .map-ask .hint{ font-size:0.74rem; max-width:34ch; line-height:1.5; }
+  .map-links{
+    margin-top:10px; font-size:0.78rem; color:var(--ink-dim);
+  }
+  .map-links a{ color:var(--ink); }
 
   /* Contact */
   .contact-card{
@@ -802,10 +833,16 @@
           <strong>Smokehouse Shisha Pub</strong>
           ul. Plebiscytowa 1 · Katowice
         </div>
-        <a class="map-box" href="https://www.google.com/maps?q=50.2560485,19.0211012" target="_blank" rel="noopener" style="text-decoration:none; flex-direction:column; gap:8px;">
-          <span style="font-size:1.4rem;">📍</span>
-          <span>Otwórz lokalizację w Google Maps</span>
-        </a>
+        <div class="map-box" id="mapBox">
+          <button type="button" class="map-ask" id="mapLoad">
+            <span class="pin" aria-hidden="true"></span>
+            <span class="cta">Pokaż mapę</span>
+            <span class="hint">Mapa ładuje się dopiero po kliknięciu — wtedy Twoje dane trafią do Google Maps.</span>
+          </button>
+        </div>
+        <div class="map-links">
+          <a href="https://www.google.com/maps?q=50.2560485,19.0211012" target="_blank" rel="noopener">Otwórz w Google Maps</a>
+        </div>
       </div>
     </div>
   </div>
@@ -1051,7 +1088,9 @@
       <p><strong>Strona nie zbiera danych osobowych.</strong> Nie ma na niej formularzy, rejestracji, newslettera ani rezerwacji online. Numer telefonu i link do Instagrama służą wyłącznie informacji o lokalu.</p>
 
       <h2>5. Linki zewnętrzne</h2>
-      <p>Na stronie znajdują się linki do Instagrama i Map Google. Po kliknięciu przechodzisz na stronę tych serwisów i obowiązują Cię ich polityki prywatności. Samo wyświetlenie naszej strony nie przekazuje im żadnych danych.</p>
+      <p>Na stronie znajdują się linki do Instagrama i Map Google. Po kliknięciu przechodzisz na stronę tych serwisów i obowiązują Cię ich polityki prywatności.</p>
+      <p>W sekcji „Godziny” znajduje się mapa Google. <strong>Nie ładuje się ona automatycznie</strong> — dopóki sam nie klikniesz „Pokaż mapę”, strona nie łączy się z serwerami Google i nie przekazuje im Twojego adresu IP. Po kliknięciu mapa wczytuje się z serwerów Google i obowiązuje <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">polityka prywatności Google</a>.</p>
+      <p>Poza tym jednym przypadkiem samo wyświetlenie naszej strony nie przekazuje nikomu żadnych danych.</p>
 
       <h2>6. Twoje prawa</h2>
       <p>Masz prawo do dostępu do swoich danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia danych oraz wniesienia sprzeciwu. Aby skorzystać z tych praw, skontaktuj się z nami (pkt 1).</p>
@@ -1147,6 +1186,21 @@
     const bar = document.getElementById('privacyNotice');
     bar.hidden = false;
     document.getElementById('noticeOk').addEventListener('click', () => { bar.hidden = true; });
+  })();
+
+  /* mapa Google ładuje się dopiero po kliknięciu (zgoda użytkownika) */
+  (function(){
+    const btn = document.getElementById('mapLoad');
+    if(!btn) return;
+    btn.addEventListener('click', () => {
+      const f = document.createElement('iframe');
+      f.src = 'https://www.google.com/maps?q=50.2560485,19.0211012&z=17&hl=pl&output=embed';
+      f.loading = 'lazy';
+      f.title = 'Smokehouse Shisha Pub — ul. Plebiscytowa 1, Katowice';
+      f.referrerPolicy = 'no-referrer-when-downgrade';
+      f.allowFullscreen = true;
+      document.getElementById('mapBox').replaceChildren(f);
+    });
   })();
 
   const tabs = document.querySelectorAll('.tab');
